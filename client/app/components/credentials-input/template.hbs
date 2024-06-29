@@ -1,0 +1,18 @@
+<BsForm @model={{this}} @onSubmit={{this.submit}} as |form|>
+    {{#if form.isSubmitting}}
+        <span
+            class='spinner-border spinner-border-sm'
+            role='status'
+            aria-hidden='true'
+        ></span>
+        Logging in...
+    {{else}}
+        <form.element @property='username' @label='username' />
+        <form.element
+            @property='password'
+            @label='password'
+            @controlType='password'
+        />
+        <form.submitButton>Login</form.submitButton>
+    {{/if}}
+</BsForm>

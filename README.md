@@ -4,6 +4,20 @@
 
 This is an application to help people understand and manage their finances by aggregating their data and summarizing it through easy-to-understand visuals. This is a work in progress.
 
+## Files
+
+### Client
+
+This is where frontend code lives. It is an Emberjs app.
+
+### Database
+
+This is where the Sqlite3 database lives.
+
+### Server
+
+This is where the server code lives. It is a Flask app that leverages the Plaid api for financial data.
+
 ## TODO
 
 This section outlines the steps necessary to finish the app.

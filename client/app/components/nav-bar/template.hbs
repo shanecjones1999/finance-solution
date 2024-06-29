@@ -1,0 +1,23 @@
+<div>
+    <h2>Nav Bar</h2>
+    <BsNavbar as |navbar|>
+        <div class='navbar-header'>
+            <navbar.toggle />
+            <a class='navbar-brand' href='#'>Brand</a>
+        </div>
+        <navbar.content>
+            <navbar.nav as |nav|>
+                <nav.item>
+                    <nav.linkTo @route='home'>Home</nav.linkTo>
+                </nav.item>
+                {{#if this.session.isAuthenticated}}
+                    <BsButton {{on 'click' this.signOut}}>Sign out</BsButton>
+                {{else}}
+                    <nav.item>
+                        <nav.linkTo @route='login'>Login</nav.linkTo>
+                    </nav.item>
+                {{/if}}
+            </navbar.nav>
+        </navbar.content>
+    </BsNavbar>
+</div>
