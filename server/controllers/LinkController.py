@@ -53,6 +53,8 @@ from plaid.model.link_token_create_request_statements import LinkTokenCreateRequ
 from plaid.model.statements_download_request import StatementsDownloadRequest
 from plaid.api import plaid_api
 
+from logic.LinkLogic import LinkLogic
+
 load_dotenv()
 
 # Fill in your Plaid API keys - https://dashboard.plaid.com/account/keys
@@ -106,7 +108,7 @@ transfer_id = None
 
 class LinkController(MethodView):
     def __init__(self):
-        self.logic = None
+        self.logic = LinkLogic()
 
     def post(self):
         # Determine the action based on the path
@@ -147,7 +149,6 @@ class LinkController(MethodView):
             print(e)
             return json.loads(e.body)
 
-    # @app.route('/api/set_access_token', methods=['POST'])
     def get_access_token(self):
         global access_token
         global item_id
@@ -163,6 +164,7 @@ class LinkController(MethodView):
                 exchange_request)
             access_token = exchange_response['access_token']
             item_id = exchange_response['item_id']
+            self.logic.store_plaid_link(8, access_token, item_id, None, None)
             return jsonify(exchange_response.to_dict())
         except plaid.ApiException as e:
             return json.loads(e.body)

@@ -14,6 +14,11 @@ This is where frontend code lives. It is an Emberjs app.
 
 This is where the Sqlite3 database lives.
 
+#### Link Schema
+
+- Users: user_id and related information
+- 
+
 ### Server
 
 This is where the server code lives. It is a Flask app that leverages the Plaid api for financial data.

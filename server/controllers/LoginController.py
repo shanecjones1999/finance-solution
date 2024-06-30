@@ -37,10 +37,10 @@ class LoginController(MethodView):
         username = request.json.get('username')
         password = request.json.get('password')
 
-        success, error = self.logic.handle_registration(username, password)
+        success = self.logic.handle_registration(username, password)
 
         if not success:
-            return jsonify({"message": error, "username": username}), 409
+            return jsonify({"message": "error logging in", "username": username}), 409
 
         # Add your registration logic here
         return jsonify({"message": "Registration successful", "username": username}), 200

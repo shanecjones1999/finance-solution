@@ -9,27 +9,7 @@ export default class CustomTokenAuthenticator extends OAuth2PasswordGrant {
         return { token: null };
     }
 
-    async authenticate(username, password) {
-        try {
-            let response = await fetch(`${ENV.apiHost}/api/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                }),
-            });
-
-            if (!response.ok) {
-                console.error('Unable to authenticate user.');
-            }
-
-            const data = await response.json();
-            return { token: data.token };
-        } catch (error) {
-            return error;
-        }
+    authenticate(token) {
+        return { token: token };
     }
 }

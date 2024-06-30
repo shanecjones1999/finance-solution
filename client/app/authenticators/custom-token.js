@@ -9,27 +9,9 @@ export default class CustomTokenAuthenticator extends BaseAuthenticator {
         return { token: null };
     }
 
-    async authenticate(username, password) {
-        try {
-            const response = await fetch(`${ENV.apiHost}/api/login`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    username: username,
-                    password: password,
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                return;
-            }
-
-            const data = await response.json();
-            return { token: data.token };
-        } catch (error) {
-            return error;
-        }
+    async authenticate(tokenPromise) {
+        // return new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
+        const data = await tokenPromise;
+        return { token: data.token };
     }
 }
