@@ -31,6 +31,19 @@ class Database:
         ''')
 
         conn.commit()
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            created_at_utc TEXT NOT NULL,
+            updated_at_utc TEXT NOT NULL
+        )
+        ''')
+
+        conn.commit()
+
         conn.close()
 
     def terminate_connection(self):

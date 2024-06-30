@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from flask.views import MethodView
 from logic.LoginLogic import LoginLogic
 from utils.AuthUtils import AuthUtils
@@ -28,6 +28,7 @@ class LoginController(MethodView):
 
         if (self.logic.are_valid_credentials(username, password)):
             token = AuthUtils.generate_token(username)
+            session['username'] = username
             return jsonify({"token": token}), 200
 
         return jsonify({"message": "Login failed"}), 401
@@ -56,8 +57,6 @@ class LoginController(MethodView):
 
 login_blueprint = Blueprint('login', __name__)
 
-# login_blueprint.add_url_rule(
-#     '/api/login', view_func=LoginController.as_view('login'), methods=['POST'])
 login_blueprint.add_url_rule(
     '/api/login', view_func=LoginController.as_view('login'), methods=['POST'])
 login_blueprint.add_url_rule(

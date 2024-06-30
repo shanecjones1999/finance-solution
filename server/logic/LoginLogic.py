@@ -1,4 +1,4 @@
-from utils.PasswordUtils import PasswordUtils
+from utils.CryptographyUtils import CryptographyUtils
 from database.data.LoginData import LoginData
 
 
@@ -7,7 +7,7 @@ class LoginLogic:
         self.loginData = LoginData()
 
     def are_valid_credentials(self, username: str, password: str):
-        hashed_password = PasswordUtils.encrypt_password(password)
+        hashed_password = CryptographyUtils.encrypt(password)
         real_hashed_password = self.get_hashed_password(username)
         return hashed_password == real_hashed_password
 
@@ -18,6 +18,6 @@ class LoginLogic:
         if not self.loginData.is_username_available(username):
             return False, "Username is not available."
 
-        hashed_password = PasswordUtils.encrypt_password(password)
+        hashed_password = CryptographyUtils.encrypt(password)
         self.loginData.create_user(username, hashed_password)
         return True, ""

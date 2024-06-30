@@ -15,3 +15,6 @@ venv/
 
 # Python cache
 *.pyc
+
+# Python config
+server/config.py

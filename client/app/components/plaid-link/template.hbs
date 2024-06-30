@@ -1,0 +1,9 @@
+<button type='button' {{on 'click' this.openPlaidLink}}>
+    Link your bank account
+</button>
+
+<button type='button' {{on 'click' this.getTransactions}}>Get Transactions</button>
+
+{{#each this.transactions as |transaction|}}
+    <Finance::Transaction @data={{transaction}} />
+{{/each}}
