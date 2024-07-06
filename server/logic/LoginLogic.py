@@ -3,6 +3,7 @@ from utils.CryptographyUtils import CryptographyUtils
 from database.Connection import Session, User
 # from database.Models.User import User
 from datetime import datetime
+from utils.AuthUtils import AuthUtils
 
 
 class LoginLogic:
@@ -10,19 +11,22 @@ class LoginLogic:
         self.session = Session()
         # self.loginData = LoginData()
 
-    def are_valid_credentials(self, username: str, password: str):
+    def validate_login(self, username: str, password: str) -> str | None:
         user = self.session.query(User).filter(
             User.username == username).first()
 
+        valid_credentials = self.are_valid_credentials(user, password)
+        if not valid_credentials:
+            return None
+
+        return AuthUtils.generate_token(user.id)
+
+    def are_valid_credentials(self, user: User, password: str) -> bool:
         if not user:
             return False
         hashed_password = CryptographyUtils.encrypt(password)
 
-        # real_hashed_password = self.get_hashed_password(username)
         return hashed_password == user.password
-
-    # def get_hashed_password(self, username: str):
-    #     return self.loginData.get_encrypted_password(username)
 
     def handle_registration(self, username: str, password: str):
         if self.is_username_available(username):

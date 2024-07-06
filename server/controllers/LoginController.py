@@ -26,12 +26,12 @@ class LoginController(MethodView):
         username = request.json.get('username')
         password = request.json.get('password')
 
-        if (self.logic.are_valid_credentials(username, password)):
-            token = AuthUtils.generate_token(username)
-            session['username'] = username
-            return jsonify({"token": token}), 200
+        token = self.logic.validate_login(username=username, password=password)
 
-        return jsonify({"message": "Login failed"}), 401
+        if not token:
+            return jsonify({"message": "Login failed"}), 401
+
+        return jsonify({"token": token}), 200
 
     def register(self):
         username = request.json.get('username')

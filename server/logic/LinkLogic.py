@@ -1,6 +1,6 @@
 # server/logic/plaid_logic.py
-from database.Connection import Session
-from database.Models.PlaidLink import PlaidLink
+from database.Connection import Session, PlaidLink
+# from database.Models.PlaidLink import PlaidLink
 
 
 class LinkLogic:
