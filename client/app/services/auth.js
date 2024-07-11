@@ -43,7 +43,7 @@ export default class AuthService extends Service {
 
             const response = await this.api.call('/api/register', options);
 
-            if (response && response.ok) {
+            if (response) {
                 await this.login(username, password);
             } else {
                 console.log('Unable to register.', response);

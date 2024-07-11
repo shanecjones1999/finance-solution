@@ -117,7 +117,7 @@ class LinkController(MethodView):
         if request.path == '/api/create_link_token':
             return self.create_link_token()
         elif request.path == '/api/set_access_token':
-            return self.get_access_token()
+            return self.get_access_token(user_id)
 
     @token_required
     def get(self, user_id):
@@ -153,21 +153,32 @@ class LinkController(MethodView):
             print(e)
             return json.loads(e.body)
 
-    def get_access_token(self):
+    def get_access_token(self, user_id):
         try:
             public_token = request.json.get('public_token')
-            user_id = AuthUtils.decode_request_auth(request=request)
-            exchange_request = {'public_token': public_token}
+            res, error = self.logic.get_access_token(public_token, user_id)
 
-            exchange_response = client.item_public_token_exchange(
-                exchange_request)
-            access_token = exchange_response['access_token']
-            item_id = exchange_response['item_id']
-            self.logic.store_plaid_link(
-                user_id, access_token, item_id, None, None)
-            return jsonify(exchange_response.to_dict())
-        except plaid.ApiException as e:
-            return json.loads(e.body)
+            if error:
+                return jsonify({'error': error}), 400
+
+            return jsonify(res.to_dict()), 200
+        except Exception as e:
+            return jsonify({'error': e})
+
+        # try:
+        #     public_token = request.json.get('public_token')
+        #     user_id = AuthUtils.decode_request_auth(request=request)
+        #     exchange_request = {'public_token': public_token}
+
+        #     exchange_response = client.item_public_token_exchange(
+        #         exchange_request)
+        #     access_token = exchange_response['access_token']
+        #     item_id = exchange_response['item_id']
+        #     self.logic.store_plaid_link(
+        #         user_id, access_token, item_id, None, None)
+        #     return jsonify(exchange_response.to_dict())
+        # except plaid.ApiException as e:
+        #     return json.loads(e.body)
 
     def get_transactions(self, user_id):
         transactions, error = self.logic.get_transactions(user_id)

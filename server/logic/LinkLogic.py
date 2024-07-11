@@ -95,6 +95,27 @@ class LinkLogic(BaseLogic):
             # return jsonify(error_response)
             return [], "Error looking up transations"
 
+    def get_access_token(self, public_token, user_id):
+        try:
+            exchange_request = {'public_token': public_token}
+
+            exchange_response = self.client.item_public_token_exchange(
+                exchange_request)
+            access_token = exchange_response['access_token']
+            item_id = exchange_response['item_id']
+
+            institution_response, _ = self.get_institution_and_item(
+                access_token)
+
+            institution_id = institution_response['institution']['institution_id']
+            institution_name = institution_response['institution']['name']
+
+            self.store_plaid_link(
+                user_id, access_token, item_id, institution_id, institution_name)
+            return exchange_response, ""
+        except Exception as e:
+            return None, f"Error: {e}"
+
     def get_plaid_links_by_user_id(self, user_id) -> PlaidLink:
         return self.session.query(PlaidLink).filter(PlaidLink.user_id == user_id)
 
@@ -106,15 +127,9 @@ class LinkLogic(BaseLogic):
             for link in plaid_link:
                 access_token = link.access_token
 
-                request = ItemGetRequest(access_token=access_token)
-                response = self.client.item_get(request)
-                request = InstitutionsGetByIdRequest(
-                    institution_id=response['item']['institution_id'],
-                    country_codes=list(
-                        map(lambda x: CountryCode(x), self.country_codes))
-                )
-                institution_response = self.client.institutions_get_by_id(
-                    request)
+                institution_response, response = self.get_institution_and_item(
+                    access_token)
+
                 item = {'item': response.to_dict()['item'],
                         'institution': institution_response.to_dict()['institution']
                         }
@@ -123,6 +138,19 @@ class LinkLogic(BaseLogic):
             return res, ""
         except Exception as e:
             return res, f"Error getting item: {e}"
+
+    def get_institution_and_item(self, access_token):
+        request = ItemGetRequest(access_token=access_token)
+        response = self.client.item_get(request)
+        request = InstitutionsGetByIdRequest(
+            institution_id=response['item']['institution_id'],
+            country_codes=list(
+                map(lambda x: CountryCode(x), self.country_codes))
+        )
+        institution_response = self.client.institutions_get_by_id(
+            request)
+
+        return institution_response, response
 
     def store_plaid_link(self, user_id, access_token, item_id, institution_id, institution_name):
         plaid_link = PlaidLink(
