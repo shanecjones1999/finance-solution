@@ -10,9 +10,6 @@ export default class AuthService extends Service {
     async login(username, password) {
         const options = {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 username: username,
                 password: password,
@@ -38,9 +35,6 @@ export default class AuthService extends Service {
         try {
             const options = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({
                     username: username,
                     password: password,

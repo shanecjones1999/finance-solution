@@ -2,8 +2,13 @@
     Link your bank account
 </button>
 
-<button type='button' {{on 'click' this.getTransactions}}>Get Transactions</button>
+{{!-- <button type='button' {{on 'click' this.getTransactions}}>Get Transactions</button> --}}
 
-{{#each this.transactions as |transaction|}}
+{{!-- {{#each this.transactions as |transaction|}}
     <Finance::Transaction @data={{transaction}} />
+{{/each}} --}}
+
+<h2>Your Connected Institutions</h2>
+{{#each this.financialItems as |item|}}
+    <Finance::FinancialItem @item={{item}} />
 {{/each}}

@@ -22,3 +22,13 @@ class AuthUtils:
             return None
         except jwt.InvalidTokenError:
             return None
+
+    @staticmethod
+    def decode_request_auth(request):
+        try:
+            auth_header = request.headers.get('Authorization')
+            token = auth_header.split(" ")[1]
+            user_id = AuthUtils.decode_token(token)
+            return user_id
+        except:
+            return None

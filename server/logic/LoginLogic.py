@@ -1,15 +1,13 @@
 from utils.CryptographyUtils import CryptographyUtils
-# from database.data.LoginData import LoginData
-from database.Connection import Session, User
-# from database.Models.User import User
+from database.Connection import User
 from datetime import datetime
 from utils.AuthUtils import AuthUtils
+from logic.BaseLogic import BaseLogic
 
 
-class LoginLogic:
+class LoginLogic(BaseLogic):
     def __init__(self):
-        self.session = Session()
-        # self.loginData = LoginData()
+        super().__init__()
 
     def validate_login(self, username: str, password: str) -> str | None:
         user = self.session.query(User).filter(

@@ -9,9 +9,9 @@ export default class CustomTokenAuthenticator extends BaseAuthenticator {
         return { token: null };
     }
 
-    async authenticate(tokenPromise) {
+    async authenticate(data) {
         // return new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated delay
-        const data = await tokenPromise;
+        // const data = await tokenPromise;
         return { token: data.token };
     }
 }

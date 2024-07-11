@@ -6,7 +6,8 @@ export default class ApiService extends Service {
     @service session;
 
     async call(url, options = {}) {
-        let headers = options.headers || {};
+        const headers = options.headers || {};
+        headers['Content-Type'] = 'application/json';
 
         // Get the auth token from the session
         if (this.session.isAuthenticated) {

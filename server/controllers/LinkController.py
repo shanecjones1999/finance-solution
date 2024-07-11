@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify, session
 from flask.views import MethodView
 
+from logic.LinkLogic import LinkLogic
+from utils.AuthUtils import AuthUtils
+from Authorization.TokenValidation import token_required
+
 import base64
 import os
 import datetime as dt
@@ -36,8 +40,8 @@ from plaid.model.investments_transactions_get_request import InvestmentsTransact
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.investments_holdings_get_request import InvestmentsHoldingsGetRequest
-from plaid.model.item_get_request import ItemGetRequest
-from plaid.model.institutions_get_by_id_request import InstitutionsGetByIdRequest
+
+
 from plaid.model.transfer_authorization_create_request import TransferAuthorizationCreateRequest
 from plaid.model.transfer_create_request import TransferCreateRequest
 from plaid.model.transfer_get_request import TransferGetRequest
@@ -52,8 +56,6 @@ from plaid.model.statements_list_request import StatementsListRequest
 from plaid.model.link_token_create_request_statements import LinkTokenCreateRequestStatements
 from plaid.model.statements_download_request import StatementsDownloadRequest
 from plaid.api import plaid_api
-
-from logic.LinkLogic import LinkLogic
 
 load_dotenv()
 
@@ -110,17 +112,19 @@ class LinkController(MethodView):
     def __init__(self):
         self.logic = LinkLogic()
 
-    def post(self):
-        # Determine the action based on the path
+    @token_required
+    def post(self, user_id):
         if request.path == '/api/create_link_token':
             return self.create_link_token()
         elif request.path == '/api/set_access_token':
             return self.get_access_token()
 
-    def get(self):
-        # Determine the action based on the path
+    @token_required
+    def get(self, user_id):
         if request.path == '/api/transactions':
-            return self.get_transactions()
+            return self.get_transactions(user_id)
+        elif request.path == '/api/items':
+            return self.get_items(user_id)
 
     def create_link_token(self):
         try:
@@ -150,63 +154,36 @@ class LinkController(MethodView):
             return json.loads(e.body)
 
     def get_access_token(self):
-        global access_token
-        global item_id
-        global transfer_id
-        public_token = request.json.get('public_token')
         try:
-            # exchange_request = ItemPublicTokenExchangeRequest(
-            #     public_token=public_token)
-
+            public_token = request.json.get('public_token')
+            user_id = AuthUtils.decode_request_auth(request=request)
             exchange_request = {'public_token': public_token}
 
             exchange_response = client.item_public_token_exchange(
                 exchange_request)
             access_token = exchange_response['access_token']
             item_id = exchange_response['item_id']
-            self.logic.store_plaid_link(8, access_token, item_id, None, None)
+            self.logic.store_plaid_link(
+                user_id, access_token, item_id, None, None)
             return jsonify(exchange_response.to_dict())
         except plaid.ApiException as e:
             return json.loads(e.body)
 
-    # @app.route('/api/transactions', methods=['GET'])
-    def get_transactions(self):
-        # Set cursor to empty to receive all historical updates
-        cursor = ''
+    def get_transactions(self, user_id):
+        transactions, error = self.logic.get_transactions(user_id)
 
-        # New transaction updates since "cursor"
-        added = []
-        modified = []
-        removed = []  # Removed transaction ids
-        has_more = True
-        try:
-            # Iterate through each page of new transaction updates for item
-            while has_more:
-                request = TransactionsSyncRequest(
-                    access_token=access_token,
-                    cursor=cursor,
-                )
-                response = client.transactions_sync(request).to_dict()
-                # Add this page of results
-                added.extend(response['added'])
-                modified.extend(response['modified'])
-                removed.extend(response['removed'])
-                has_more = response['has_more']
-                # Update cursor to the next cursor
-                cursor = response['next_cursor']
-                pretty_print_response(response)
-
-            # Return the 8 most recent transactions
-            latest_transactions = sorted(
-                added, key=lambda t: t['date'])  # [-8:]
-            for index, transaction in enumerate(latest_transactions, start=1):
-                transaction['id'] = index  # Assigning a simple incremental id
+        if error:
             return jsonify({
-                'data': latest_transactions})
+                'data': transactions,
+            }), 400
 
-        except plaid.ApiException as e:
-            error_response = format_error(e)
-            return jsonify(error_response)
+        return jsonify({'data': transactions}), 200
+
+    def get_items(self, user_id):
+        res, error = self.logic.get_item(user_id=user_id)
+        if error:
+            return jsonify({'error': error}), 400
+        return jsonify({'data': res}), 200
 
 
 def pretty_print_response(response):
@@ -227,3 +204,5 @@ link_blueprint.add_url_rule(
     '/api/set_access_token', view_func=LinkController.as_view('set_access_token'), methods=['POST'])
 link_blueprint.add_url_rule(
     '/api/transactions', view_func=LinkController.as_view('transactions'), methods=['GET'])
+link_blueprint.add_url_rule(
+    '/api/items', view_func=LinkController.as_view('items'), methods=['GET'])

@@ -10,5 +10,5 @@ Router.map(function () {
     this.route('/');
     this.route('login');
     this.route('signup');
-    this.route('home');
+    this.route('home'); //  { path: 'summary' }
 });
