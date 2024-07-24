@@ -5,6 +5,9 @@ from logic.LinkLogic import LinkLogic
 from utils.AuthUtils import AuthUtils
 from Authorization.TokenValidation import token_required
 
+from Plaid.PlaidConfiguration import PlaidConfiguration
+from Plaid.PlaidApiWrapper import PlaidApiWrapper
+
 import base64
 import os
 import datetime as dt
@@ -124,7 +127,9 @@ class LinkController(MethodView):
         if request.path == '/api/transactions':
             return self.get_transactions(user_id)
         elif request.path == '/api/items':
-            return self.get_items(user_id)
+            return self.get_financial_items(user_id)
+        elif request.path == '/api/financial-institution-items':
+            return self.get_financial_items(user_id)
 
     def create_link_token(self):
         try:
@@ -165,21 +170,6 @@ class LinkController(MethodView):
         except Exception as e:
             return jsonify({'error': e})
 
-        # try:
-        #     public_token = request.json.get('public_token')
-        #     user_id = AuthUtils.decode_request_auth(request=request)
-        #     exchange_request = {'public_token': public_token}
-
-        #     exchange_response = client.item_public_token_exchange(
-        #         exchange_request)
-        #     access_token = exchange_response['access_token']
-        #     item_id = exchange_response['item_id']
-        #     self.logic.store_plaid_link(
-        #         user_id, access_token, item_id, None, None)
-        #     return jsonify(exchange_response.to_dict())
-        # except plaid.ApiException as e:
-        #     return json.loads(e.body)
-
     def get_transactions(self, user_id):
         transactions, error = self.logic.get_transactions(user_id)
 
@@ -190,8 +180,8 @@ class LinkController(MethodView):
 
         return jsonify({'data': transactions}), 200
 
-    def get_items(self, user_id):
-        res, error = self.logic.get_item(user_id=user_id)
+    def get_financial_items(self, user_id):
+        res, error = self.logic.get_financial_items(user_id=user_id)
         if error:
             return jsonify({'error': error}), 400
         return jsonify({'data': res}), 200
@@ -209,11 +199,26 @@ def format_error(e):
 
 link_blueprint = Blueprint('link', __name__)
 
+# link_blueprint.add_url_rule(
+#     '/api/create_link_token', view_func=LinkController.as_view('create_link_token'), methods=['POST'])
+# link_blueprint.add_url_rule(
+#     '/api/set_access_token', view_func=LinkController.as_view('set_access_token'), methods=['POST'])
+# link_blueprint.add_url_rule(
+#     '/api/transactions', view_func=LinkController.as_view('transactions'), methods=['GET'])
+# link_blueprint.add_url_rule(
+#     '/api/items', view_func=LinkController.as_view('items'), methods=['GET'])
+
+link_controller = LinkController.as_view(
+    'link_controller')
+
 link_blueprint.add_url_rule(
-    '/api/create_link_token', view_func=LinkController.as_view('create_link_token'), methods=['POST'])
+    '/api/create_link_token', view_func=link_controller, methods=['POST'])
+link_blueprint.add_url_rule('/api/set_access_token',
+                            view_func=link_controller, methods=['POST'])
 link_blueprint.add_url_rule(
-    '/api/set_access_token', view_func=LinkController.as_view('set_access_token'), methods=['POST'])
+    '/api/transactions', view_func=link_controller, methods=['GET'])
 link_blueprint.add_url_rule(
-    '/api/transactions', view_func=LinkController.as_view('transactions'), methods=['GET'])
+    '/api/items', view_func=link_controller, methods=['GET'])
+
 link_blueprint.add_url_rule(
-    '/api/items', view_func=LinkController.as_view('items'), methods=['GET'])
+    '/api/financial-institution-items', view_func=link_controller, methods=['GET'])

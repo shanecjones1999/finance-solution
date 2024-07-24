@@ -9,10 +9,13 @@ from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.institutions_get_by_id_request import InstitutionsGetByIdRequest
 from plaid.model.country_code import CountryCode
 
+from Plaid.PlaidApiWrapper import PlaidApiWrapper
+
 
 class LinkLogic(BaseLogic):
     def __init__(self):
         super().__init__()
+        self.plaidApiWrapper = PlaidApiWrapper()
         # Fill in your Plaid API keys - https://dashboard.plaid.com/account/keys
         PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID')
         PLAID_SECRET = os.getenv('PLAID_SECRET')
@@ -119,25 +122,8 @@ class LinkLogic(BaseLogic):
     def get_plaid_links_by_user_id(self, user_id) -> PlaidLink:
         return self.session.query(PlaidLink).filter(PlaidLink.user_id == user_id)
 
-    def get_item(self, user_id):
-        res = []
-        try:
-            plaid_link = self.get_plaid_links_by_user_id(user_id=user_id)
-
-            for link in plaid_link:
-                access_token = link.access_token
-
-                institution_response, response = self.get_institution_and_item(
-                    access_token)
-
-                item = {'item': response.to_dict()['item'],
-                        'institution': institution_response.to_dict()['institution']
-                        }
-                res.append(item)
-
-            return res, ""
-        except Exception as e:
-            return res, f"Error getting item: {e}"
+    def get_financial_items(self, user_id):
+        return self.plaidApiWrapper.get_financial_items(user_id)
 
     def get_institution_and_item(self, access_token):
         request = ItemGetRequest(access_token=access_token)

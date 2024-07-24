@@ -15,7 +15,6 @@ export default class PlaidLink extends Component {
     constructor() {
         super(...arguments);
         this.createLinkToken();
-        this.getItems();
     }
 
     async createLinkToken() {
@@ -24,31 +23,12 @@ export default class PlaidLink extends Component {
         };
 
         const response = await this.api.call('/api/create_link_token', options);
-        this.linkToken = response.link_token;
-    }
 
-    // @action
-    // async getTransactions() {
-    //     try {
-    //         const transactions = await this.store.findAll('transaction');
-    //         this.transactions = transactions;
-    //     } catch (e) {
-    //         console.error('Error getting transactions', e);
-    //     }
-    // }
-
-    async getItems() {
-        try {
-            const options = {
-                method: 'GET',
-            };
-            const items = await this.api.call('/api/items', options);
-            console.log(items);
-            const itms = items.data.map((it) => it.institution);
-            this.financialItems = itms;
-        } catch (e) {
-            console.error('Error getting items', e);
+        if (!response) {
+            return;
         }
+
+        this.linkToken = response.link_token;
     }
 
     @action
@@ -56,14 +36,14 @@ export default class PlaidLink extends Component {
         if (this.linkToken) {
             const handler = Plaid.create({
                 token: this.linkToken,
-                onSuccess: async (public_token, metadata) => {
+                onSuccess: async (public_token) => {
                     const options = {
                         method: 'POST',
                         body: JSON.stringify({ public_token }),
                     };
                     await this.api.call('/api/set_access_token', options);
                 },
-                onExit: (err, metadata) => {
+                onExit: (err) => {
                     if (err != null) {
                         console.error(err);
                     }

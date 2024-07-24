@@ -1,6 +1,10 @@
 {{page-title 'Home'}}
 <div>
     <h2>Home</h2>
-    <PlaidLink />
+    {{! <PlaidLink /> }}
+    <h2>Your Connected Institutions</h2>
+    {{#each this.model.financialItems as |item|}}
+        <Finance::FinancialItem @item={{item}} />
+    {{/each}}
 </div>
 {{outlet}}
